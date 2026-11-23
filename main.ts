@@ -129,7 +129,10 @@ class EmaGatedHoldBot {
       if (close <= (this.entryClose as number) * (1 - this.p.stop)) return this.sellAll(state);
       return []; // hold to the end; only the crash exits apply
     }
-    // Flat: test the gated entry once every `entryEvery` bars.
+    // Flat: test the gated entry once every `entryEvery` bars. After a
+    // crash exit, wait out the cooldown instead of buying straight back
+    // into the same fall at the next checkpoint.
+    if (seq <= this.cooldownUntil) return [];
     const lb = this.p.entryEvery;
     if (seq % lb !== 0 || this.closes.length < lb + 1) return [];
     const ret = close / this.closes[this.closes.length - lb - 1] - 1;
